@@ -289,7 +289,7 @@ export class MediaPeer extends STEEmitter<              //根据STEEmitter拓展
             s: data.byteLength,
             src: this.id,
         });
-        console.log("MediaPeer id: "+this.id+" segmentId: "+segmentId);
+        console.log("MediaPeer id: "+this.id+" segmentId: "+segmentId+" byteLen: "+data.byteLength);
         let bytesLeft = data.byteLength;
         while (bytesLeft > 0) {
             const bytesToSend =
