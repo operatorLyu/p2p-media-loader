@@ -151,6 +151,7 @@ export class P2PMediaManager extends STEEmitter<
             },
         };
         console.log("local peerId: "+this.getPeerId());
+        console.log("numwant: ",this.settings.peerRequestsPerAnnounce);
         let oldTrackerClient = this.trackerClient;
 
         this.trackerClient = new Client(clientOptions);
@@ -160,6 +161,7 @@ export class P2PMediaManager extends STEEmitter<
         this.trackerClient.on("peer", this.onTrackerPeer);
 
         this.trackerClient.start();
+        
 
         if (oldTrackerClient !== null) {
             oldTrackerClient.destroy();
@@ -178,6 +180,7 @@ export class P2PMediaManager extends STEEmitter<
     private onTrackerUpdate = (data: unknown): void => {
         this.debug("tracker update", data);
         this.emit("tracker-update", data);
+        console.log("serverPeerNo: "+this.trackerClient.serverPeerNo);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
