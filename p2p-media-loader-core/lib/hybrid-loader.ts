@@ -67,6 +67,7 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
     private httpRandomDownloadInterval: ReturnType<typeof setInterval> | undefined;
     private httpDownloadInitialTimeoutTimestamp = -Infinity;
     private masterSwarmId?: string;
+    private serverPeerNo:number;
 
     public static isSupported = (): boolean => {
         return window.RTCPeerConnection.prototype.createDataChannel !== undefined;
@@ -134,6 +135,7 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
     };//创建P2P管理器
 
     public load = async (segments: Segment[], streamSwarmId: string): Promise<void> => {
+        console.log("consumeOnly:"+this.settings.consumeOnly);
         if (this.httpRandomDownloadInterval === undefined) {
             // Do once on first call
             this.httpRandomDownloadInterval = setInterval(
@@ -504,7 +506,7 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         this.emit(Events.PeerClose, peerId);
     };
 
-    private onTrackerUpdate = async (data: { incomplete?: number }) => {
+    private onTrackerUpdate = async (data: { incomplete?: number, serverPeerNo?:number}) => {
         if (
             this.httpDownloadInitialTimeoutTimestamp !== -Infinity &&
             data.incomplete !== undefined &&
@@ -520,6 +522,13 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
                 if (this.processSegmentsQueue(storageSegments) && !this.settings.consumeOnly) {
                     this.p2pManager.sendSegmentsMapToAll(this.createSegmentsMap(storageSegments));
                 }
+            }
+        }
+        //added by liuxi, pass the serverPeerNo to Hybrid-loader and set normal peer consume only
+        if(data.serverPeerNo){
+            this.serverPeerNo = data.serverPeerNo;
+            if(this.serverPeerNo === -1){
+                this.settings.consumeOnly = true;
             }
         }
     };

@@ -178,6 +178,9 @@ export class P2PMediaManager extends STEEmitter<
     };
 
     private onTrackerUpdate = (data: unknown): void => {
+        Object.assign(data,{
+            serverPeerNo: this.trackerClient.serverPeerNo
+        });
         this.debug("tracker update", data);
         this.emit("tracker-update", data);
         console.log("serverPeerNo: "+this.trackerClient.serverPeerNo);
