@@ -37,7 +37,7 @@
     "url": "https://github.com/Novage/p2p-media-loader.git"
   },
   "dependencies": {
-    "bittorrent-tracker": "^9.16.1",
+    "bittorrent-tracker": "file:../../bittorrent-tracker",
     "buffer": "^5.2.1",
     "debug": "^4.3.1",
     "events": "^3.3.0",
