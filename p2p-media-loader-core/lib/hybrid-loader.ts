@@ -83,6 +83,7 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         if (typeof bufferedSegmentsCount === "number") {
             if (settings.p2pDownloadMaxPriority === undefined) {
                 this.settings.p2pDownloadMaxPriority = bufferedSegmentsCount;
+                console.log("log test");
             }
 
             if (settings.httpDownloadMaxPriority === undefined) {
