@@ -191,6 +191,7 @@ export class MediaPeer extends STEEmitter<              //根据STEEmitter拓展
                 break;
 
             case MediaPeerCommands.SegmentData:
+                this.downloadingSegmentId = command.i as string; //added by liuxi
                 if (
                     this.downloadingSegmentId &&
                     this.downloadingSegmentId === command.i &&
