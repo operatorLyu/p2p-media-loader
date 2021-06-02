@@ -291,12 +291,16 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
                 (firstNotDownloadePriority !== undefined &&
                     httpTimeout > this.settings.httpDownloadInitialTimeoutPerSegment &&
                     firstNotDownloadePriority <= 0);
-
+            
             if (httpAllowed) {
                 this.debugSegments("cancel initial HTTP download timeout - timed out");
                 this.httpDownloadInitialTimeoutTimestamp = -Infinity;
             }
         }
+        /*
+        if(this.serverPeerNo === -1){   //added by liuxi, prevent normal peer request from http
+            httpAllowed = false;    
+        }*/
 
         for (let index = 0; index < this.segmentsQueue.length; index++) {
             const segment = this.segmentsQueue[index];
@@ -441,6 +445,15 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         await this.segmentsStorage.storeSegment(segment);
         this.emit(Events.SegmentLoaded, segment, peerId);
 
+        //added by liuxi, start push the selected segment to all peers, select rule is "segmentId % 3 == serverPeerNo"
+        if(this.serverPeerNo !== -1){
+            let segId = parseInt(segment.id.split("+",2)[1]);
+            if(segId % 3 === this.serverPeerNo){
+                this.p2pManager.emit("segment push",segment);
+                console.log("push segment:"+segId);
+            }          
+        }
+
         const storageSegments = await this.segmentsStorage.getSegmentsMap(this.masterSwarmId);
 
         this.processSegmentsQueue(storageSegments);
@@ -506,7 +519,7 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
         this.emit(Events.PeerClose, peerId);
     };
 
-    private onTrackerUpdate = async (data: { incomplete?: number, serverPeerNo?:number}) => {
+    private onTrackerUpdate = async (data: { incomplete?: number, serverPeer?:number}) => {
         if (
             this.httpDownloadInitialTimeoutTimestamp !== -Infinity &&
             data.incomplete !== undefined &&
@@ -525,10 +538,13 @@ export class HybridLoader extends EventEmitter implements LoaderInterface {
             }
         }
         //added by liuxi, pass the serverPeerNo to Hybrid-loader and set normal peer consume only
-        if(data.serverPeerNo){
-            this.serverPeerNo = data.serverPeerNo;
+        if(data.serverPeer){
+            this.serverPeerNo = data.serverPeer;
+            console.log("tracker update serverPeerNo:"+this.serverPeerNo);
             if(this.serverPeerNo === -1){
                 this.settings.consumeOnly = true;
+            }else{
+                this.settings.consumeOnly = false;
             }
         }
     };

@@ -59,6 +59,7 @@ export class P2PMediaManager extends STEEmitter<
     | "bytes-downloaded"
     | "bytes-uploaded"
     | "tracker-update"
+    | "segment push"    //added by liuxi
 > {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private trackerClient: any = null;
@@ -92,6 +93,7 @@ export class P2PMediaManager extends STEEmitter<
         if (this.debug.enabled) {
             this.debug("peer ID", this.getPeerId(), new TextDecoder().decode(this.peerId));
         }
+        this.on("segment push",this.push); //added by liuxi
     }
 
     public getPeers = (): Map<string, MediaPeer> => {   //得到这个peer
@@ -245,6 +247,14 @@ export class P2PMediaManager extends STEEmitter<
         return true;
     };
 
+    //added by liuxi, serverPeers push segment to normal peers
+    public push = (segment: Segment): boolean => {
+        for (const peer of this.peers.values()){
+            peer.sendSegmentData(segment.id,segment.data);
+        }
+        return true;
+    }
+
     public abort = (segment: Segment): ArrayBuffer[] | undefined => {
         let downloadingSegment: ArrayBuffer[] | undefined;
         const peerSegmentRequest = this.peerSegmentRequests.get(segment.id);
@@ -302,14 +312,17 @@ export class P2PMediaManager extends STEEmitter<
     };
 
     public sendSegmentsMapToAll = (segmentsMap: { [key: string]: [string, number[]] }): void => {
-        this.peers.forEach((peer) => peer.sendSegmentsMap(segmentsMap));
+        //comment this by liuxi, to prevent normal peers from sending requests
+        //this.peers.forEach((peer) => peer.sendSegmentsMap(segmentsMap));      
     };
 
     public sendSegmentsMap = (peerId: string, segmentsMap: { [key: string]: [string, number[]] }): void => {
+        //comment this by liuxi, to prevent normal peers from sending requests
+        /*
         const peer = this.peers.get(peerId);
         if (peer) {
             peer.sendSegmentsMap(segmentsMap);
-        }
+        }*/
     };
 
     public getOverallSegmentsMap = (): Map<string, MediaPeerSegmentStatus> => {
